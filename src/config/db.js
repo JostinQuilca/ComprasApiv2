@@ -1,44 +1,21 @@
-// src/config/db.js
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
 
-// Lee las variables de entorno para conexión
-const {
-  DB_HOST,
-  DB_PORT,
-  DB_USER,
-  DB_PASSWORD,
-  DB_NAME,
-  // Opcionalmente: DB_SCHEMA, DB_DIALECT si fuese necesario
-} = process.env;
-
-// Crea la instancia de Sequelize
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
   process.env.DB_PASSWORD,
   {
-    host: process.env.DB_HOST,
+    server: process.env.DB_HOST, // Usa 'server' en lugar de 'host'
     port: process.env.DB_PORT,
-    dialect: 'mssql', // <--- ¡Debe decir 'mssql'!
-
-    // Opciones IMPORTANTES para Azure
+    dialect: 'mssql',
+    dialectModule: require('tedious'),
     dialectOptions: {
       options: {
-        encrypt: true, // Azure requiere conexiones encriptadas
-        trustServerCertificate: false 
+        encrypt: true, // Requerido para Azure SQL
+        trustServerCertificate: true // Para pruebas, opcional
       }
     }
   }
 );
-async function testConnection() {
-  try {
-    await sequelize.authenticate();
-    console.log('Conexión a la base de datos establecida con éxito.');
-  } catch (error) {
-    console.error('No se pudo conectar a la base de datos:', error);
-  }
-}
-testConnection();
 
 module.exports = sequelize;
